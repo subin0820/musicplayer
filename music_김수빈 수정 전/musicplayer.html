@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Icons">
+    <style>
+        body,div,h2,p{  margin:0px;  padding:0px;  box-sizing:border-box;  }
+        :root{
+          --color-red:#ae1100;       --body-bg:#2e2e2e;        --play-bg:#ebecf0;
+          --color-light:#ffffff;     --color-shadow:#babecc;   --text-color:#616e7f;
+          --bar-bg:#aec9f8;          --text-size:30px;
+        }
+        body{
+          height:100vh; background:var(--body-bg); 
+          display:flex; justify-content:center; align-items:center;
+        }
+        .player_body{
+          width:360px; padding:25px 30px; border-radius:16px; background:var(--play-bg);
+          user-select:none; 
+          box-shadow: 6px 5px 10px 0px var(--text-color), 
+                      7px 7px 5px 0px var(--color-light) inset,
+                      -7px -7px 5px 0px var(--color-shadow) inset;
+        }
+        .top{  margin-bottom:25px;  }
+        .top>h2{
+          font-size:var(--text-size); font-size: 18px; font-weight:100;  color:var(--text-color); text-align:center;
+          text-shadow:1px 1px 1px var(--color-light), -1px -1px 1px #151515;
+        }
+        .top>.icon{margin-top: -25px; display: flex; width: 20px; height: 24px;}
+        .top>.icon2{margin-top: -25px; display: flex; width: 20px; height: 26px; padding-left: 269px;}
+        .album{
+          height:260px;  border-radius:12px;  overflow:hidden;
+        }
+        .album>img{
+          width:100%;  height:100%;  object-fit:cover;  object-position:center bottom;
+        }
+        .info{
+          text-align:center;  font-size:calc(var(--text-size) * 0.8); margin:calc(var(--text-size) * 0.5);
+        }
+        .info>.artist{   font-size:calc(var(--text-size) * 0.6);  }
+    
+        .progress{
+          height:8px;  border-radius:8px;  background:var(--play-bg);  
+          box-shadow:2px 2px 2px 0px var(--color-shadow) inset, 
+                    -2px -2px 2px 0px var(--color-light) inset;
+        }
+        .progress>.bar{
+          width:10%;  height:8px;  border-radius:8px;  background:var(--bar-bg);
+          box-shadow:2px 2px 3px 0px var(--color-shadow) inset;
+        }
+        .progress>.timebox{
+          margin-top:8px;  font-size:calc(var(--text-size) * 0.5);
+          display:flex; justify-content:space-between;   
+        }
+        .progress>.timebox>span{  color:#151515; text-shadow:1px 1px 0px var(--color-light); }
+    
+        .controls{
+          margin-top:40px;  display:flex;  justify-content:space-between; align-items:center;
+        }
+        .controls>span{
+          font-size:var(--text-size); width:40px; height:40px; border-radius:50%;
+          background:var(--play-bg);  color:var(--text-color);
+          display:flex; justify-content:center; align-items:center;
+          text-shadow:1px 1px 0px var(--color-light);
+        }
+        .controls>span:hover, .controls>span:active{
+          color:var(--color-red); 
+          box-shadow:-3px -3px 5px 0px var(--color-light), 3px 3px 5px 0px var(--color-shadow);
+        }
+        #rangebar{width: 300px; height: 15px; }
+      </style>
+</head>
+<body>
+    <div class="player_body">
+        <div class="top">
+          <h2>Now Playing</h2>
+          <div class="icon">
+            <img src="images/down.png" alt="">
+          </div>
+          <div class="icon2">
+            <img src="images/dot.png" alt="">
+          </div>
+        </div>
+        <div class="album">
+          <img src="images/album1.jpg" alt="Alone -- Color Out">
+        </div>
+        <div class="volume">
+          <span class="volumeBar"></span>
+          <input type="range" id="rangebar" value="10">
+        </div>
+        <div class="info">
+          <p class="name">Alone</p>
+          <p class="artist">Color Out</p>
+        </div>
+        <div class="progress">
+          <div class="bar"><audio src="" id="mainAudio"></audio></div>
+          <div class="timebox">
+            <span class="current">0:00</span><span class="duration">0:00</span>
+          </div>
+        </div>
+        <div class="controls"> 
+          <span id="repeatBtn" class="material-icons">repeat</span>
+          <span id="prevBtn" class="material-icons">skip_previous</span>
+          <span id="playBtn" class="material-icons">play_arrow</span> 
+          <span id="nextBtn" class="material-icons">skip_next</span>
+          <span id="listBtn" class="material-icons">queue_music</span>
+        </div>
+      </div>
+      <script src="music_list.js"></script>
+      <script>
+        const musicApp = document.querySelector('.player_body');
+        const musicAudio = musicApp.querySelector('#mainAudio');    
+        const playBtn = musicApp.querySelector('#playBtn');
+        let list_index = 0;
+ 
+        const albumImg = musicApp.querySelector('.album>img');
+        const musicName = musicApp.querySelector('.name');
+        const artistName = musicApp.querySelector('.artist');
+        const totalTime = musicApp.querySelector('.duration');
+        const playTime = musicApp.querySelector('.current');
+        const progressive = musicApp.querySelector('.progress');
+        const progressBar = musicApp.querySelector('.bar');
+        const prevBtn = musicApp.querySelector('#prevBtn');
+        const nextBtn = musicApp.querySelector('#nextBtn');
+
+        const loadMusic = (num) =>{
+          musicAudio.src = `songs/${musicList[num].audio}.mp3`;
+          albumImg.src = `images/${musicList[num].img}.jpg`;
+          musicName.innerText = musicList[num].name;
+          artistName.innerHTML = musicList[num].artist;
+          totalTime.innerHTML = musicList[num].total;
+        }
+        loadMusic(list_index);
+        const musicPlay = () =>{
+          playBtn.innerHTML="pause";
+          musicAudio.play();
+        }
+        const musicPause = () =>{
+          playBtn.innerHTML="play_arrow";
+          musicAudio.pause();
+        }
+        const prevMusic = () =>{
+          list_index--;
+          if( list_index < 0 ){        
+            list_index = musicList.length-1;      
+          }
+          loadMusic(list_index);
+          musicPlay();
+        }
+        const nextMusic = () =>{
+          list_index++;
+          if( list_index >= musicList.length ){        
+            list_index = 0;      
+          }
+          loadMusic(list_index);
+          musicPlay();
+        }
+        playBtn.addEventListener('click', ()=>{
+          if(playBtn.innerText=='play_arrow'){
+            musicPlay();
+          }else{
+            musicPause();
+          }
+        });
+        nextBtn.addEventListener('click', ()=>{
+          nextMusic();
+        });
+        prevBtn.addEventListener('click', ()=>{
+          prevMusic();
+        });
+      
+        musicAudio.addEventListener('timeupdate', (e)=>{
+          let current = e.target.currentTime;
+          let duration = e.target.duration;
+          let progressRatio = ( current/duration )*100;
+          progressBar.style.width = `${progressRatio}%`;
+          let currentMin = Math.floor( current/60 );
+          let currentSec = Math.floor( current%60 );
+          if( currentMin<10 ){
+            currentMin = `0${currentMin}`;
+          }
+          if( currentSec<10 ){
+            currentSec = `0${currentSec}`;
+          }
+          playTime.innerHTML = `${currentMin} : ${currentSec}`;
+        })
+    
+        progressive.addEventListener('click', (e)=>{
+          let clickPosition = e.offsetX;
+          let maxWidth = progressive.clientWidth;
+          musicAudio.currentTime = ( clickPosition / maxWidth )*musicAudio.duration;
+          if( playBtn.innerHTML == 'play_arrow'){
+            musicPlay();
+          }
+        })
+        const Range = document.querySelector('#rangebar');
+        Range.addEventListener('change',()=>{
+        console.log( Range.value/100 )
+        })
+      </script>
+</body>
+</html>
